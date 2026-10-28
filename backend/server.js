@@ -1,6 +1,16 @@
 import 'dotenv/config';
 import express from 'express';import mongoose from 'mongoose';import cors from 'cors';import bcrypt from 'bcryptjs';import jwt from 'jsonwebtoken';import crypto from 'node:crypto';
-const app=express();app.use(cors({origin:process.env.CLIENT_ORIGIN||'http://localhost:5173'}));app.use(express.json());
+const app=express();
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://event-registration-ticket-system.vercel.app'
+];
+
+app.use(cors({
+  origin: allowedOrigins
+}));
+
+app.use(express.json());
 const U=mongoose.model('User',new mongoose.Schema({name:String,email:{type:String,unique:true,lowercase:true},password:String,role:{type:String,enum:['admin','attendee'],default:'attendee'}}));
 const E=mongoose.model('Event',new mongoose.Schema({title:{type:String,required:true},description:String,category:String,venue:{type:String,required:true},date:{type:Date,required:true},capacity:{type:Number,required:true,min:1},booked:{type:Number,default:0}}));
 const rs=new mongoose.Schema({user:{type:mongoose.Schema.Types.ObjectId,ref:'User'},event:{type:mongoose.Schema.Types.ObjectId,ref:'Event'},code:{type:String,unique:true},checkedIn:{type:Boolean,default:false}});rs.index({user:1,event:1},{unique:true});const R=mongoose.model('Registration',rs);
